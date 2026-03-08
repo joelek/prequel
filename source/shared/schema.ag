@@ -1,0 +1,52 @@
+guard Operator: ">" | ">=" | "==" | "!=" | "<" | "<=";
+
+guard IntegerOperator: Operator;
+
+guard WhereInteger: {
+	key: string,
+	operator: IntegerOperator,
+	operand: integer | null
+};
+
+guard StringOperator: Operator | "^=" | "*=" | "$=";
+
+guard WhereString: {
+	key: string,
+	operator: StringOperator,
+	operand: string | null
+};
+
+guard BooleanOperator: Operator;
+
+guard WhereBoolean: {
+	key: string,
+	operator: BooleanOperator,
+	operand: boolean | null
+};
+
+guard WhereAll: {
+	all: Where[]
+};
+
+guard WhereAny: {
+	any: Where[]
+};
+
+guard WhereNot: {
+	not: Where
+};
+
+guard Where:
+	WhereInteger |
+	WhereString |
+	WhereBoolean |
+	WhereAll |
+	WhereAny |
+	WhereNot;
+
+guard Sort: "ASC" | "DESC";
+
+guard Order: {
+	keys: string[],
+	sort: Sort
+};

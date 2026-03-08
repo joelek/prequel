@@ -1,0 +1,31 @@
+{
+	"bin": {},
+	"dependencies": {
+		"@joelek/autoguard": "github:joelek/autoguard#master"
+	},
+	"devDependencies": {
+		"@joelek/wtf": "github:joelek/wtf#semver:^1.3",
+		"@types/node": "^22",
+		"mariadb": "3.4",
+		"typescript": "^4"
+	},
+	"license": "MIT",
+	"main": "./dist/nodejs/index.js",
+	"name": "@joelek/prequel",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/joelek/prequel.git"
+	},
+	"scripts": {
+		"appgen": "node -e \"process.stdout.write(JSON.stringify((({ name, version }) => ({ name, timestamp: Date.now(), version }))(require('./package.json')), null, '\t').split(/\\r?\\n/).join(require('os').EOL) + require('os').EOL)\" > ./source/app.json",
+		"build": "npm run appgen && npm run codegen && npm run compile && npm run package && npm run test",
+		"clean": "rm -rf ./build/ ./node_modules/",
+		"codegen": "npx autoguard",
+		"compile": "rm -rf ./build/* && npx tsc --build",
+		"package": "rm -rf ./dist/* && cp -r ./build/* ./dist/",
+		"version": "npm run build && git add ./",
+		"postversion": "git push && git push --tags",
+		"test": "npx wtf --runner=**.test.ts:ts-node"
+	},
+	"version": "0.0.0"
+}
