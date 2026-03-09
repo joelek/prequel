@@ -15,7 +15,7 @@ for (let operator of [">", ">=", "==", "!=", "<", "<="] as const) {
 					where: {
 						key: "optional_integer",
 						operator: operator,
-						operand: 5
+						operand: value
 					},
 					order: {
 						keys: ["optional_integer", "object_id"],
@@ -28,7 +28,7 @@ for (let operator of [">", ">=", "==", "!=", "<", "<="] as const) {
 						where: {
 							key: "optional_integer",
 							operator: operator,
-							operand: 5
+							operand: value
 						},
 						order: {
 							keys: ["optional_integer", "object_id"],
