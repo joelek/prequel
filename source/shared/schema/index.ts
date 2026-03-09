@@ -96,6 +96,28 @@ export type WhereBoolean = autoguard.guards.Object<{
 	]>
 }, {}>;
 
+export const DateOperator: autoguard.serialization.MessageGuard<DateOperator> = autoguard.guards.Reference.of(() => Operator);
+
+export type DateOperator = autoguard.guards.Reference<Operator>;
+
+export const WhereDate: autoguard.serialization.MessageGuard<WhereDate> = autoguard.guards.Object.of({
+	"key": autoguard.guards.String,
+	"operator": autoguard.guards.Reference.of(() => DateOperator),
+	"operand": autoguard.guards.Union.of(
+		autoguard.guards.Date,
+		autoguard.guards.Null
+	)
+}, {});
+
+export type WhereDate = autoguard.guards.Object<{
+	"key": autoguard.guards.String,
+	"operator": autoguard.guards.Reference<DateOperator>,
+	"operand": autoguard.guards.Union<[
+		autoguard.guards.Date,
+		autoguard.guards.Null
+	]>
+}, {}>;
+
 export const WhereAll: autoguard.serialization.MessageGuard<WhereAll> = autoguard.guards.Object.of({
 	"all": autoguard.guards.Array.of(autoguard.guards.Reference.of(() => Where))
 }, {});
@@ -124,6 +146,7 @@ export const Where: autoguard.serialization.MessageGuard<Where> = autoguard.guar
 	autoguard.guards.Reference.of(() => WhereInteger),
 	autoguard.guards.Reference.of(() => WhereString),
 	autoguard.guards.Reference.of(() => WhereBoolean),
+	autoguard.guards.Reference.of(() => WhereDate),
 	autoguard.guards.Reference.of(() => WhereAll),
 	autoguard.guards.Reference.of(() => WhereAny),
 	autoguard.guards.Reference.of(() => WhereNot)
@@ -133,6 +156,7 @@ export type Where = autoguard.guards.Union<[
 	autoguard.guards.Reference<WhereInteger>,
 	autoguard.guards.Reference<WhereString>,
 	autoguard.guards.Reference<WhereBoolean>,
+	autoguard.guards.Reference<WhereDate>,
 	autoguard.guards.Reference<WhereAll>,
 	autoguard.guards.Reference<WhereAny>,
 	autoguard.guards.Reference<WhereNot>
@@ -167,6 +191,8 @@ export namespace Autoguard {
 		"WhereString": autoguard.guards.Reference.of(() => WhereString),
 		"BooleanOperator": autoguard.guards.Reference.of(() => BooleanOperator),
 		"WhereBoolean": autoguard.guards.Reference.of(() => WhereBoolean),
+		"DateOperator": autoguard.guards.Reference.of(() => DateOperator),
+		"WhereDate": autoguard.guards.Reference.of(() => WhereDate),
 		"WhereAll": autoguard.guards.Reference.of(() => WhereAll),
 		"WhereAny": autoguard.guards.Reference.of(() => WhereAny),
 		"WhereNot": autoguard.guards.Reference.of(() => WhereNot),

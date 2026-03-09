@@ -479,6 +479,25 @@ export class VolatileObjectStore<A extends ObjectProperties<A>, B extends string
 			} else {
 				let dummy: never = where.operator;
 			}
+		} else if (schema.WhereDate.is(where)) {
+			let one = object[where.key as keyof Object<A, B>];
+			let two = where.operand;
+			let collator_result = this.collator(one, two);
+			if (where.operator === "<") {
+				return collator_result === "ONE_COMES_FIRST";
+			} else if (where.operator === "<=") {
+				return collator_result === "ONE_COMES_FIRST" || collator_result === "IDENTICAL";
+			} else if (where.operator === "==") {
+				return collator_result === "IDENTICAL";
+			} else if (where.operator === "!=") {
+				return collator_result === "ONE_COMES_FIRST" || collator_result === "TWO_COMES_FIRST";
+			} else if (where.operator === ">") {
+				return collator_result === "TWO_COMES_FIRST";
+			} else if (where.operator === ">=") {
+				return collator_result === "TWO_COMES_FIRST" || collator_result === "IDENTICAL";
+			} else {
+				let dummy: never = where.operator;
+			}
 		} else if (schema.WhereAll.is(where)) {
 			for (let subwhere of where.all) {
 				if (!this.matchesWhere(object, subwhere)) {
@@ -685,7 +704,7 @@ export class DatabaseObjectStore<A extends ObjectProperties<A>, B extends string
 		}
 	}
 
-	protected serializeWherePrimitive(where: { key: string; operator: schema.Operator; operand: string | boolean | number | null; }, null_order: NullOrder): {
+	protected serializeWherePrimitive(where: { key: string; operator: schema.Operator; operand: string | boolean | number | Date | null; }, null_order: NullOrder): {
 		sql: string;
 		parameters: Array<ObjectValue>;
 	} {
@@ -930,6 +949,8 @@ export class DatabaseObjectStore<A extends ObjectProperties<A>, B extends string
 		} else if (schema.WhereInteger.is(where)) {
 			return this.serializeWherePrimitive(where, null_order);
 		} else if (schema.WhereBoolean.is(where)) {
+			return this.serializeWherePrimitive(where, null_order);
+		} else if (schema.WhereDate.is(where)) {
 			return this.serializeWherePrimitive(where, null_order);
 		} else if (schema.WhereAll.is(where)) {
 			let results = where.all.map((where) => this.serializeWhere(where, null_order));
