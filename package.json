@@ -1,7 +1,7 @@
 {
 	"bin": {},
 	"dependencies": {
-		"@joelek/autoguard": "github:joelek/autoguard#master"
+		"@joelek/autoguard": "github:joelek/autoguard#semver:^5.16"
 	},
 	"devDependencies": {
 		"@joelek/wtf": "github:joelek/wtf#semver:^1.3",
