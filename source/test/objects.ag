@@ -2,5 +2,6 @@ guard Object: {
 	object_id: string,
 	optional_boolean: boolean | null,
 	optional_integer: integer | null,
-	optional_string: string | null
+	optional_string: string | null,
+	optional_date: date | null
 };

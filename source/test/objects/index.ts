@@ -15,6 +15,10 @@ export const Object: autoguard.serialization.MessageGuard<Object> = autoguard.gu
 	"optional_string": autoguard.guards.Union.of(
 		autoguard.guards.String,
 		autoguard.guards.Null
+	),
+	"optional_date": autoguard.guards.Union.of(
+		autoguard.guards.Date,
+		autoguard.guards.Null
 	)
 }, {});
 
@@ -30,6 +34,10 @@ export type Object = autoguard.guards.Object<{
 	]>,
 	"optional_string": autoguard.guards.Union<[
 		autoguard.guards.String,
+		autoguard.guards.Null
+	]>,
+	"optional_date": autoguard.guards.Union<[
+		autoguard.guards.Date,
 		autoguard.guards.Null
 	]>
 }, {}>;
