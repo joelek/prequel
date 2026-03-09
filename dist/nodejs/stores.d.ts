@@ -65,6 +65,10 @@ export type LookupWhere<A extends ObjectProperties<A>, B extends string> = {
         key: C;
         operator: schema.BooleanOperator;
         operand: Object<A, B>[C];
+    } : Object<A, B>[C] extends Date | null | undefined ? {
+        key: C;
+        operator: schema.DateOperator;
+        operand: Object<A, B>[C];
     } : never;
 }[Extract<keyof Object<A, B>, string>] | {
     all: LookupWhere<A, B>[];
