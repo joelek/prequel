@@ -6,4 +6,5 @@ export declare const OBJECTS: prequel.stores.DatabaseObjectStore<{
     optional_boolean: boolean | null;
     optional_integer: number | null;
     optional_string: string | null;
+    optional_date: Date | null;
 }, "object_id">;

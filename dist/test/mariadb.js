@@ -37,7 +37,9 @@ async function getConnection() {
                         optional_integer INT,
                             UNIQUE INDEX optional_integer (optional_integer, object_id),
                         optional_string VARCHAR(15),
-                            UNIQUE INDEX optional_string (optional_string, object_id)
+                            UNIQUE INDEX optional_string (optional_string, object_id),
+                        optional_date DATETIME,
+                            UNIQUE INDEX optional_date (optional_date, object_id)
                     )
                 `, []);
                 for (let i = 0; i < 1000; i++) {
@@ -46,8 +48,10 @@ async function getConnection() {
                             object_id,
                             optional_boolean,
                             optional_integer,
-                            optional_string
+                            optional_string,
+                            optional_date
                         ) VALUES (
+                            ?,
                             ?,
                             ?,
                             ?,
@@ -57,7 +61,8 @@ async function getConnection() {
                         prequel.ids.generateHexId(32),
                         Math.random() < 0.1 ? null : Math.random() < 0.5 ? true : false,
                         Math.random() < 0.1 ? null : Math.floor(Math.random() * 10),
-                        Math.random() < 0.1 ? null : String.fromCharCode("A".charCodeAt(0) + Math.floor(Math.random() * 10))
+                        Math.random() < 0.1 ? null : String.fromCharCode("A".charCodeAt(0) + Math.floor(Math.random() * 10)),
+                        Math.random() < 0.1 ? null : new Date(Math.floor(Math.random() * 10))
                     ]);
                 }
         */

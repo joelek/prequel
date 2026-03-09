@@ -7,7 +7,8 @@ exports.Object = autoguard.guards.Object.of({
     "object_id": autoguard.guards.String,
     "optional_boolean": autoguard.guards.Union.of(autoguard.guards.Boolean, autoguard.guards.Null),
     "optional_integer": autoguard.guards.Union.of(autoguard.guards.Integer, autoguard.guards.Null),
-    "optional_string": autoguard.guards.Union.of(autoguard.guards.String, autoguard.guards.Null)
+    "optional_string": autoguard.guards.Union.of(autoguard.guards.String, autoguard.guards.Null),
+    "optional_date": autoguard.guards.Union.of(autoguard.guards.Date, autoguard.guards.Null)
 }, {});
 var Autoguard;
 (function (Autoguard) {

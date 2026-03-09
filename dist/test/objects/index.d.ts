@@ -14,6 +14,10 @@ export type Object = autoguard.guards.Object<{
         autoguard.guards.String,
         autoguard.guards.Null
     ]>;
+    "optional_date": autoguard.guards.Union<[
+        autoguard.guards.Date,
+        autoguard.guards.Null
+    ]>;
 }, {}>;
 export declare namespace Autoguard {
     const Guards: {
@@ -22,6 +26,7 @@ export declare namespace Autoguard {
             optional_boolean: boolean | null;
             optional_integer: number | null;
             optional_string: string | null;
+            optional_date: Date | null;
         }>;
     };
     type Guards = {
