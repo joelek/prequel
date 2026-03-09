@@ -416,6 +416,32 @@ class VolatileObjectStore extends ObjectStore {
                 let dummy = where.operator;
             }
         }
+        else if (schema.WhereDate.is(where)) {
+            let one = object[where.key];
+            let two = where.operand;
+            let collator_result = this.collator(one, two);
+            if (where.operator === "<") {
+                return collator_result === "ONE_COMES_FIRST";
+            }
+            else if (where.operator === "<=") {
+                return collator_result === "ONE_COMES_FIRST" || collator_result === "IDENTICAL";
+            }
+            else if (where.operator === "==") {
+                return collator_result === "IDENTICAL";
+            }
+            else if (where.operator === "!=") {
+                return collator_result === "ONE_COMES_FIRST" || collator_result === "TWO_COMES_FIRST";
+            }
+            else if (where.operator === ">") {
+                return collator_result === "TWO_COMES_FIRST";
+            }
+            else if (where.operator === ">=") {
+                return collator_result === "TWO_COMES_FIRST" || collator_result === "IDENTICAL";
+            }
+            else {
+                let dummy = where.operator;
+            }
+        }
         else if (schema.WhereAll.is(where)) {
             for (let subwhere of where.all) {
                 if (!this.matchesWhere(object, subwhere)) {
@@ -872,6 +898,9 @@ class DatabaseObjectStore extends ObjectStore {
             return this.serializeWherePrimitive(where, null_order);
         }
         else if (schema.WhereBoolean.is(where)) {
+            return this.serializeWherePrimitive(where, null_order);
+        }
+        else if (schema.WhereDate.is(where)) {
             return this.serializeWherePrimitive(where, null_order);
         }
         else if (schema.WhereAll.is(where)) {

@@ -151,7 +151,7 @@ export declare class DatabaseObjectStore<A extends ObjectProperties<A>, B extend
     protected serializeWherePrimitive(where: {
         key: string;
         operator: schema.Operator;
-        operand: string | boolean | number | null;
+        operand: string | boolean | number | Date | null;
     }, null_order: NullOrder): {
         sql: string;
         parameters: Array<ObjectValue>;

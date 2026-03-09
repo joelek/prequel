@@ -46,6 +46,17 @@ export type WhereBoolean = autoguard.guards.Object<{
         autoguard.guards.Null
     ]>;
 }, {}>;
+export declare const DateOperator: autoguard.serialization.MessageGuard<DateOperator>;
+export type DateOperator = autoguard.guards.Reference<Operator>;
+export declare const WhereDate: autoguard.serialization.MessageGuard<WhereDate>;
+export type WhereDate = autoguard.guards.Object<{
+    "key": autoguard.guards.String;
+    "operator": autoguard.guards.Reference<DateOperator>;
+    "operand": autoguard.guards.Union<[
+        autoguard.guards.Date,
+        autoguard.guards.Null
+    ]>;
+}, {}>;
 export declare const WhereAll: autoguard.serialization.MessageGuard<WhereAll>;
 export type WhereAll = autoguard.guards.Object<{
     "all": autoguard.guards.Array<autoguard.guards.Reference<Where>>;
@@ -63,6 +74,7 @@ export type Where = autoguard.guards.Union<[
     autoguard.guards.Reference<WhereInteger>,
     autoguard.guards.Reference<WhereString>,
     autoguard.guards.Reference<WhereBoolean>,
+    autoguard.guards.Reference<WhereDate>,
     autoguard.guards.Reference<WhereAll>,
     autoguard.guards.Reference<WhereAny>,
     autoguard.guards.Reference<WhereNot>
@@ -98,6 +110,12 @@ export declare namespace Autoguard {
             operator: "<" | "<=" | ">=" | ">" | "==" | "!=";
             operand: boolean | null;
         }>;
+        DateOperator: autoguard.guards.ReferenceGuard<"<" | "<=" | ">=" | ">" | "==" | "!=">;
+        WhereDate: autoguard.guards.ReferenceGuard<{
+            key: string;
+            operator: "<" | "<=" | ">=" | ">" | "==" | "!=";
+            operand: Date | null;
+        }>;
         WhereAll: autoguard.guards.ReferenceGuard<{
             all: autoguard.guards.Array<{
                 key: string;
@@ -111,6 +129,10 @@ export declare namespace Autoguard {
                 key: string;
                 operator: "<" | "<=" | ">=" | ">" | "==" | "!=";
                 operand: boolean | null;
+            } | {
+                key: string;
+                operator: "<" | "<=" | ">=" | ">" | "==" | "!=";
+                operand: Date | null;
             } | any | {
                 any: autoguard.guards.Array<{
                     key: string;
@@ -124,6 +146,10 @@ export declare namespace Autoguard {
                     key: string;
                     operator: "<" | "<=" | ">=" | ">" | "==" | "!=";
                     operand: boolean | null;
+                } | {
+                    key: string;
+                    operator: "<" | "<=" | ">=" | ">" | "==" | "!=";
+                    operand: Date | null;
                 } | any | any | {
                     not: {
                         key: string;
@@ -137,6 +163,10 @@ export declare namespace Autoguard {
                         key: string;
                         operator: "<" | "<=" | ">=" | ">" | "==" | "!=";
                         operand: boolean | null;
+                    } | {
+                        key: string;
+                        operator: "<" | "<=" | ">=" | ">" | "==" | "!=";
+                        operand: Date | null;
                     } | any | any | any;
                 }>;
             } | {
@@ -152,6 +182,10 @@ export declare namespace Autoguard {
                     key: string;
                     operator: "<" | "<=" | ">=" | ">" | "==" | "!=";
                     operand: boolean | null;
+                } | {
+                    key: string;
+                    operator: "<" | "<=" | ">=" | ">" | "==" | "!=";
+                    operand: Date | null;
                 } | any | any | any;
             }>;
         }>;
@@ -168,6 +202,10 @@ export declare namespace Autoguard {
                 key: string;
                 operator: "<" | "<=" | ">=" | ">" | "==" | "!=";
                 operand: boolean | null;
+            } | {
+                key: string;
+                operator: "<" | "<=" | ">=" | ">" | "==" | "!=";
+                operand: Date | null;
             } | any | any | {
                 not: {
                     key: string;
@@ -181,6 +219,10 @@ export declare namespace Autoguard {
                     key: string;
                     operator: "<" | "<=" | ">=" | ">" | "==" | "!=";
                     operand: boolean | null;
+                } | {
+                    key: string;
+                    operator: "<" | "<=" | ">=" | ">" | "==" | "!=";
+                    operand: Date | null;
                 } | any | any | any;
             }>;
         }>;
@@ -197,6 +239,10 @@ export declare namespace Autoguard {
                 key: string;
                 operator: "<" | "<=" | ">=" | ">" | "==" | "!=";
                 operand: boolean | null;
+            } | {
+                key: string;
+                operator: "<" | "<=" | ">=" | ">" | "==" | "!=";
+                operand: Date | null;
             } | any | any | any;
         }>;
         Where: autoguard.guards.ReferenceGuard<{
@@ -212,6 +258,10 @@ export declare namespace Autoguard {
             operator: "<" | "<=" | ">=" | ">" | "==" | "!=";
             operand: boolean | null;
         } | {
+            key: string;
+            operator: "<" | "<=" | ">=" | ">" | "==" | "!=";
+            operand: Date | null;
+        } | {
             all: autoguard.guards.Array<{
                 key: string;
                 operator: "<" | "<=" | ">=" | ">" | "==" | "!=";
@@ -224,6 +274,10 @@ export declare namespace Autoguard {
                 key: string;
                 operator: "<" | "<=" | ">=" | ">" | "==" | "!=";
                 operand: boolean | null;
+            } | {
+                key: string;
+                operator: "<" | "<=" | ">=" | ">" | "==" | "!=";
+                operand: Date | null;
             } | any | {
                 any: autoguard.guards.Array<{
                     key: string;
@@ -237,6 +291,10 @@ export declare namespace Autoguard {
                     key: string;
                     operator: "<" | "<=" | ">=" | ">" | "==" | "!=";
                     operand: boolean | null;
+                } | {
+                    key: string;
+                    operator: "<" | "<=" | ">=" | ">" | "==" | "!=";
+                    operand: Date | null;
                 } | any | any | {
                     not: {
                         key: string;
@@ -250,6 +308,10 @@ export declare namespace Autoguard {
                         key: string;
                         operator: "<" | "<=" | ">=" | ">" | "==" | "!=";
                         operand: boolean | null;
+                    } | {
+                        key: string;
+                        operator: "<" | "<=" | ">=" | ">" | "==" | "!=";
+                        operand: Date | null;
                     } | any | any | any;
                 }>;
             } | {
@@ -265,6 +327,10 @@ export declare namespace Autoguard {
                     key: string;
                     operator: "<" | "<=" | ">=" | ">" | "==" | "!=";
                     operand: boolean | null;
+                } | {
+                    key: string;
+                    operator: "<" | "<=" | ">=" | ">" | "==" | "!=";
+                    operand: Date | null;
                 } | any | any | any;
             }>;
         } | {
@@ -280,6 +346,10 @@ export declare namespace Autoguard {
                 key: string;
                 operator: "<" | "<=" | ">=" | ">" | "==" | "!=";
                 operand: boolean | null;
+            } | {
+                key: string;
+                operator: "<" | "<=" | ">=" | ">" | "==" | "!=";
+                operand: Date | null;
             } | any | any | {
                 not: {
                     key: string;
@@ -293,6 +363,10 @@ export declare namespace Autoguard {
                     key: string;
                     operator: "<" | "<=" | ">=" | ">" | "==" | "!=";
                     operand: boolean | null;
+                } | {
+                    key: string;
+                    operator: "<" | "<=" | ">=" | ">" | "==" | "!=";
+                    operand: Date | null;
                 } | any | any | any;
             }>;
         } | {
@@ -308,6 +382,10 @@ export declare namespace Autoguard {
                 key: string;
                 operator: "<" | "<=" | ">=" | ">" | "==" | "!=";
                 operand: boolean | null;
+            } | {
+                key: string;
+                operator: "<" | "<=" | ">=" | ">" | "==" | "!=";
+                operand: Date | null;
             } | any | any | any;
         }>;
         Sort: autoguard.guards.ReferenceGuard<"ASC" | "DESC">;
