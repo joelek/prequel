@@ -61,7 +61,7 @@ export async function getConnection(): Promise<mariadb.Connection> {
 				Math.random() < 0.1 ? null : Math.random() < 0.5 ? true : false,
 				Math.random() < 0.1 ? null : Math.floor(Math.random() * 10),
 				Math.random() < 0.1 ? null : String.fromCharCode("A".charCodeAt(0) + Math.floor(Math.random() * 10)),
-				Math.random() < 0.1 ? null : new Date(Math.floor(Math.random() * 10))
+				Math.random() < 0.1 ? null : new Date(Math.floor(Math.random() * 10000))
 			]);
 		}
 */
