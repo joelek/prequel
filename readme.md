@@ -104,5 +104,4 @@ NB: This project targets TypeScript 4 in strict mode.
 
 ## Roadmap
 
-* Document features.
 * Write unit tests.
