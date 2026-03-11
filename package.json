@@ -27,5 +27,5 @@
 		"postversion": "git push && git push --tags",
 		"test": "npx wtf --runner=**.test.ts:ts-node"
 	},
-	"version": "0.0.0"
+	"version": "0.1.0"
 }
