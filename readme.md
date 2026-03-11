@@ -2,9 +2,75 @@
 
 Type-safe object–relational mapper.
 
+```ts
+import * as prequel from "@joelek/prequel";
+
+const OBJECTS = new prequel.stores.VolatileObjectStore("object_id", [], prequel.guards.Object.of({
+	property: prequel.guards.String
+}));
+
+let object = await OBJECTS.createObject({
+	property: "value"
+});
+
+let objects = await OBJECTS.lookupObjects({
+	where: {
+		key: "property",
+		operator: "==",
+		operand: "value"
+	},
+	order: {
+		keys: ["object_id"],
+		sort: "ASC"
+	}
+});
+```
+
 ## Features
 
-TODO
+### Object stores
+
+Prequel includes support for interfacing with different object storage systems through the abstract `ObjectStore` class. It uses the following signature where the `A` type denotes the properties record and the `B` type the name of the id field, uniquely identifying each object.
+
+```ts
+createObject(properties: A | Object<A, B>): Promise<Object<A, B>>;
+lookupObject(id: string): Promise<Object<A, B>>;
+lookupObjects(lookup_options?: LookupOptions<A, B>): Promise<Array<Object<A, B>>>;
+updateObject(object: Object<A, B>): Promise<Object<A, B>>;
+deleteObject(id: string): Promise<Object<A, B>>;
+```
+
+There are two implementations of the abstract class, `VolatileObjectStore` and `DatabaseObjectStore`.
+
+The `VolatileObjectStore` class stores objects using volatile storage (i.e. in memory). It is simple to integrate and can be used to quickly test new functionality without having to write a full-fledged database backend. It is not intended for production use since its performance is not guaranteed to be optimized for all scenarios.
+
+```ts
+import * as prequel from "@joelek/prequel";
+
+const OBJECTS = new prequel.stores.VolatileObjectStore("object_id", [], prequel.guards.Object.of({
+	property: prequel.guards.String
+}));
+```
+
+The `DatabaseObjectStore` class stores objects using a database backend, communicating through standardized ANSI SQL statements. It is a bit more complicated to integrate since database tables and indices have to be created and the connection configured. It is intended for production use as long as the database backend is properly configured.
+
+```ts
+import * as prequel from "@joelek/prequel";
+
+const DETAIL = {
+	async getConnection() {
+		return {
+			async query(sql, parameters) {
+				// Should execute the provided sql using the provided parameters and return the result, preferrably using a prepared statement.
+			}
+		};
+	}
+};
+
+const OBJECTS = new prequel.stores.DatabaseObjectStore(DETAIL, "objects", "object_id", prequel.guards.Object.of({
+	property: prequel.guards.String
+}));
+```
 
 ## Sponsorship
 
