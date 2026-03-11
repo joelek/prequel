@@ -655,6 +655,7 @@ export type DatabaseObjectStoreDetail = {
 
 export type DatabaseObjectStoreOptions<A extends ObjectProperties<A>, B extends string> = {
 	use_ansi_quotes?: boolean;
+	debug_mode?: boolean;
 	immutable_keys?: Array<keyof A>;
 	null_order?: NullOrder;
 };
@@ -667,6 +668,7 @@ export class DatabaseObjectStore<A extends ObjectProperties<A>, B extends string
 	protected id: B;
 	protected guard: autoguard.serialization.MessageGuard<Object<A, B>>;
 	protected use_ansi_quotes: boolean;
+	protected debug_mode: boolean;
 	protected immutable_keys: Array<keyof A>;
 	protected null_order: NullOrder | undefined;
 
@@ -683,8 +685,7 @@ export class DatabaseObjectStore<A extends ObjectProperties<A>, B extends string
 	}
 
 	protected async detectNullOrder(): Promise<NullOrder> {
-		let connection = await this.detail.getConnection();
-		let objects = await connection.query<Array<{ value: number | null; }>>(`
+		let objects = await this.executeQuery<Array<{ value: number | null; }>>(`
 			SELECT
 				value
 			FROM (
@@ -707,6 +708,39 @@ export class DatabaseObjectStore<A extends ObjectProperties<A>, B extends string
 			}
 			return identifier;
 		}
+	}
+
+	protected async executeQuery<A>(sql: string, parameters: Array<ObjectValue>): Promise<A> {
+		let connection = await this.detail.getConnection();
+		if (this.debug_mode) {
+			let index = 0;
+			let debug_sql = sql.replaceAll("?", () => {
+				let parameter = parameters[index];
+				index += 1;
+				if (index > parameters.length) {
+					return "?";
+				}
+				if (parameter == null) {
+					return "NULL";
+				}
+				if (typeof parameter === "number") {
+					return `${parameter}`;
+				}
+				if (typeof parameter === "boolean") {
+					return parameter ? "TRUE" : "FALSE"
+				}
+				if (parameter instanceof Date) {
+					return parameter ? "TRUE" : "FALSE"
+				}
+				if (typeof parameter === "string") {
+					return `'${parameter.replaceAll("'", "''")}'`;
+				}
+				let dummy: never = parameter;
+				throw new errors.ExpectedUnreachableCodeError();
+			});
+			console.log(debug_sql);
+		}
+		return connection.query(sql, parameters);
 	}
 
 	protected serializeWherePrimitive(where: { key: string; operator: schema.Operator; operand: string | boolean | number | Date | null; }, null_order: NullOrder): {
@@ -1018,12 +1052,12 @@ export class DatabaseObjectStore<A extends ObjectProperties<A>, B extends string
 		this.id = id;
 		this.guard = guard;
 		this.use_ansi_quotes = options?.use_ansi_quotes ?? false;
+		this.debug_mode = options?.debug_mode ?? false;
 		this.immutable_keys = options?.immutable_keys ?? [];
 		this.null_order = options?.null_order ?? undefined;
 	}
 
 	async createObject(properties: A | Object<A, B>): Promise<Object<A, B>> {
-		let connection = await this.detail.getConnection();
 		let id = this.guard.is(properties) ? properties[this.id] : await this.createId();
 		let object = this.guard.to({
 			...properties,
@@ -1035,7 +1069,7 @@ export class DatabaseObjectStore<A extends ObjectProperties<A>, B extends string
 		let values = [
 			...Object.values<ObjectValue>(object)
 		];
-		await connection.query(`
+		await this.executeQuery(`
 			INSERT INTO ${this.escapeIdentifier(this.table)} (
 				${columns.map((column) => `${this.escapeIdentifier(column)}`).join(",\r\n				")}
 			) VALUES (
@@ -1046,8 +1080,7 @@ export class DatabaseObjectStore<A extends ObjectProperties<A>, B extends string
 	}
 
 	async lookupObject(id: string): Promise<Object<A, B>> {
-		let connection = await this.detail.getConnection();
-		let objects = await connection.query<Array<Record<string, ObjectValue>>>(`
+		let objects = await this.executeQuery<Array<Record<string, ObjectValue>>>(`
 			SELECT
 				*
 			FROM
@@ -1064,14 +1097,13 @@ export class DatabaseObjectStore<A extends ObjectProperties<A>, B extends string
 	}
 
 	async lookupObjects(lookup_options?: LookupOptions<A, B>): Promise<Object<A, B>[]> {
-		let connection = await this.detail.getConnection();
 		let options = await this.getOptions(this.id, lookup_options);
 		let null_order = this.null_order != null ? this.null_order : this.null_order = await this.detectNullOrder();
 		let where = this.serializeWhere(options.where, null_order);
 		let order = this.serializeOrder(options.order);
 		let length = this.serializeLength(options.length);
 		let offset = this.serializeOffset(options.offset);
-		let objects = await connection.query<Array<Record<string, ObjectValue>>>(`
+		let objects = await this.executeQuery<Array<Record<string, ObjectValue>>>(`
 			SELECT
 				*
 			FROM
@@ -1093,7 +1125,6 @@ export class DatabaseObjectStore<A extends ObjectProperties<A>, B extends string
 
 	async updateObject(object: Object<A, B>): Promise<Object<A, B>> {
 		object = this.guard.to(object);
-		let connection = await this.detail.getConnection();
 		let id = object[this.id];
 		let existing_object = await this.lookupObject(id).catch(() => undefined);
 		if (existing_object == null) {
@@ -1114,7 +1145,7 @@ export class DatabaseObjectStore<A extends ObjectProperties<A>, B extends string
 				}
 			}
 		}
-		await connection.query(`
+		await this.executeQuery(`
 			UPDATE
 				${this.escapeIdentifier(this.table)}
 			SET
@@ -1129,12 +1160,11 @@ export class DatabaseObjectStore<A extends ObjectProperties<A>, B extends string
 	}
 
 	async deleteObject(id: string): Promise<Object<A, B>> {
-		let connection = await this.detail.getConnection();
 		let object = await this.lookupObject(id).catch(() => undefined);
 		if (object == null) {
 			throw new ExpectedObjectError(this.id, id);
 		}
-		await connection.query(`
+		await this.executeQuery(`
 			DELETE
 			FROM
 				${this.escapeIdentifier(this.table)}
