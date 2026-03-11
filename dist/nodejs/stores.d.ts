@@ -137,6 +137,7 @@ export type DatabaseObjectStoreDetail = {
 };
 export type DatabaseObjectStoreOptions<A extends ObjectProperties<A>, B extends string> = {
     use_ansi_quotes?: boolean;
+    debug_mode?: boolean;
     immutable_keys?: Array<keyof A>;
     null_order?: NullOrder;
 };
@@ -147,11 +148,13 @@ export declare class DatabaseObjectStore<A extends ObjectProperties<A>, B extend
     protected id: B;
     protected guard: autoguard.serialization.MessageGuard<Object<A, B>>;
     protected use_ansi_quotes: boolean;
+    protected debug_mode: boolean;
     protected immutable_keys: Array<keyof A>;
     protected null_order: NullOrder | undefined;
     protected createId(): Promise<string>;
     protected detectNullOrder(): Promise<NullOrder>;
     protected escapeIdentifier(identifier: string): string;
+    protected executeQuery<A>(sql: string, parameters: Array<ObjectValue>): Promise<A>;
     protected serializeWherePrimitive(where: {
         key: string;
         operator: schema.Operator;

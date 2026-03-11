@@ -587,6 +587,7 @@ class DatabaseObjectStore extends ObjectStore {
     id;
     guard;
     use_ansi_quotes;
+    debug_mode;
     immutable_keys;
     null_order;
     async createId() {
@@ -601,8 +602,7 @@ class DatabaseObjectStore extends ObjectStore {
         return id;
     }
     async detectNullOrder() {
-        let connection = await this.detail.getConnection();
-        let objects = await connection.query(`
+        let objects = await this.executeQuery(`
 			SELECT
 				value
 			FROM (
@@ -625,6 +625,38 @@ class DatabaseObjectStore extends ObjectStore {
             }
             return identifier;
         }
+    }
+    async executeQuery(sql, parameters) {
+        let connection = await this.detail.getConnection();
+        if (this.debug_mode) {
+            let index = 0;
+            let debug_sql = sql.replaceAll("?", () => {
+                let parameter = parameters[index];
+                index += 1;
+                if (index > parameters.length) {
+                    return "?";
+                }
+                if (parameter == null) {
+                    return "NULL";
+                }
+                if (typeof parameter === "number") {
+                    return `${parameter}`;
+                }
+                if (typeof parameter === "boolean") {
+                    return parameter ? "TRUE" : "FALSE";
+                }
+                if (parameter instanceof Date) {
+                    return parameter ? "TRUE" : "FALSE";
+                }
+                if (typeof parameter === "string") {
+                    return `'${parameter.replaceAll("'", "''")}'`;
+                }
+                let dummy = parameter;
+                throw new errors.ExpectedUnreachableCodeError();
+            });
+            console.log(debug_sql);
+        }
+        return connection.query(sql, parameters);
     }
     serializeWherePrimitive(where, null_order) {
         if (null_order === "NULLS_FIRST") {
@@ -954,11 +986,11 @@ class DatabaseObjectStore extends ObjectStore {
         this.id = id;
         this.guard = guard;
         this.use_ansi_quotes = options?.use_ansi_quotes ?? false;
+        this.debug_mode = options?.debug_mode ?? false;
         this.immutable_keys = options?.immutable_keys ?? [];
         this.null_order = options?.null_order ?? undefined;
     }
     async createObject(properties) {
-        let connection = await this.detail.getConnection();
         let id = this.guard.is(properties) ? properties[this.id] : await this.createId();
         let object = this.guard.to({
             ...properties,
@@ -970,7 +1002,7 @@ class DatabaseObjectStore extends ObjectStore {
         let values = [
             ...Object.values(object)
         ];
-        await connection.query(`
+        await this.executeQuery(`
 			INSERT INTO ${this.escapeIdentifier(this.table)} (
 				${columns.map((column) => `${this.escapeIdentifier(column)}`).join(",\r\n				")}
 			) VALUES (
@@ -980,8 +1012,7 @@ class DatabaseObjectStore extends ObjectStore {
         return this.lookupObject(id);
     }
     async lookupObject(id) {
-        let connection = await this.detail.getConnection();
-        let objects = await connection.query(`
+        let objects = await this.executeQuery(`
 			SELECT
 				*
 			FROM
@@ -997,14 +1028,13 @@ class DatabaseObjectStore extends ObjectStore {
         return this.guard.to(objects[0]);
     }
     async lookupObjects(lookup_options) {
-        let connection = await this.detail.getConnection();
         let options = await this.getOptions(this.id, lookup_options);
         let null_order = this.null_order != null ? this.null_order : this.null_order = await this.detectNullOrder();
         let where = this.serializeWhere(options.where, null_order);
         let order = this.serializeOrder(options.order);
         let length = this.serializeLength(options.length);
         let offset = this.serializeOffset(options.offset);
-        let objects = await connection.query(`
+        let objects = await this.executeQuery(`
 			SELECT
 				*
 			FROM
@@ -1025,7 +1055,6 @@ class DatabaseObjectStore extends ObjectStore {
     }
     async updateObject(object) {
         object = this.guard.to(object);
-        let connection = await this.detail.getConnection();
         let id = object[this.id];
         let existing_object = await this.lookupObject(id).catch(() => undefined);
         if (existing_object == null) {
@@ -1046,7 +1075,7 @@ class DatabaseObjectStore extends ObjectStore {
                 }
             }
         }
-        await connection.query(`
+        await this.executeQuery(`
 			UPDATE
 				${this.escapeIdentifier(this.table)}
 			SET
@@ -1060,12 +1089,11 @@ class DatabaseObjectStore extends ObjectStore {
         return this.lookupObject(id);
     }
     async deleteObject(id) {
-        let connection = await this.detail.getConnection();
         let object = await this.lookupObject(id).catch(() => undefined);
         if (object == null) {
             throw new ExpectedObjectError(this.id, id);
         }
-        await connection.query(`
+        await this.executeQuery(`
 			DELETE
 			FROM
 				${this.escapeIdentifier(this.table)}
