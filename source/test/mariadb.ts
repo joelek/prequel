@@ -14,6 +14,7 @@ export async function getConnection(): Promise<mariadb.Connection> {
 			password: "",
 			bigIntAsNumber: true,
 			decimalAsNumber: true,
+			checkNumberRange: true,
 			typeCast: (field, next) => {
 				if ([mariadb.TypeNumbers.TINY, mariadb.TypeNumbers.SHORT, mariadb.TypeNumbers.LONG].includes(field.columnType) && field.columnLength === 1) {
 					let value = field.int();
