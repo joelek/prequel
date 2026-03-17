@@ -743,7 +743,7 @@ export class DatabaseObjectStore<A extends ObjectProperties<A>, B extends string
 		return connection.query(sql, parameters);
 	}
 
-	protected serializeWherePrimitive(where: { key: string; operator: schema.Operator; operand: string | boolean | number | Date | null; }, null_order: NullOrder): {
+	protected serializeWherePrimitive(where: schema.WhereBoolean | schema.WhereDate | schema.WhereInteger | schema.WhereString, null_order: NullOrder): {
 		sql: string;
 		parameters: Array<ObjectValue>;
 	} {
@@ -829,6 +829,48 @@ export class DatabaseObjectStore<A extends ObjectProperties<A>, B extends string
 						sql: `(${this.escapeIdentifier(where.key)} >= ?)`,
 						parameters: [
 							where.operand
+						]
+					};
+				}
+			} else if (where.operator === "^=") {
+				if (where.operand == null) {
+					return {
+						sql: `(FALSE)`,
+						parameters: []
+					};
+				} else {
+					return {
+						sql: `${this.escapeIdentifier(where.key)} LIKE ? ESCAPE '\\\\'`,
+						parameters: [
+							`${where.operand.replace(/[\\%_]/g, (match) => `\\${match}`)}%`
+						]
+					};
+				}
+			} else if (where.operator === "*=") {
+				if (where.operand == null) {
+					return {
+						sql: `(FALSE)`,
+						parameters: []
+					};
+				} else {
+					return {
+						sql: `${this.escapeIdentifier(where.key)} LIKE ? ESCAPE '\\\\'`,
+						parameters: [
+							`%${where.operand.replace(/[\\%_]/g, (match) => `\\${match}`)}%`
+						]
+					};
+				}
+			} else if (where.operator === "$=") {
+				if (where.operand == null) {
+					return {
+						sql: `(FALSE)`,
+						parameters: []
+					};
+				} else {
+					return {
+						sql: `${this.escapeIdentifier(where.key)} LIKE ? ESCAPE '\\\\'`,
+						parameters: [
+							`%${where.operand.replace(/[\\%_]/g, (match) => `\\${match}`)}`
 						]
 					};
 				}
@@ -920,6 +962,48 @@ export class DatabaseObjectStore<A extends ObjectProperties<A>, B extends string
 						]
 					};
 				}
+			} else if (where.operator === "^=") {
+				if (where.operand == null) {
+					return {
+						sql: `(FALSE)`,
+						parameters: []
+					};
+				} else {
+					return {
+						sql: `${this.escapeIdentifier(where.key)} LIKE ? ESCAPE '\\\\'`,
+						parameters: [
+							`${where.operand.replace(/[\\%_]/g, (match) => `\\${match}`)}%`
+						]
+					};
+				}
+			} else if (where.operator === "*=") {
+				if (where.operand == null) {
+					return {
+						sql: `(FALSE)`,
+						parameters: []
+					};
+				} else {
+					return {
+						sql: `${this.escapeIdentifier(where.key)} LIKE ? ESCAPE '\\\\'`,
+						parameters: [
+							`%${where.operand.replace(/[\\%_]/g, (match) => `\\${match}`)}%`
+						]
+					};
+				}
+			} else if (where.operator === "$=") {
+				if (where.operand == null) {
+					return {
+						sql: `(FALSE)`,
+						parameters: []
+					};
+				} else {
+					return {
+						sql: `${this.escapeIdentifier(where.key)} LIKE ? ESCAPE '\\\\'`,
+						parameters: [
+							`%${where.operand.replace(/[\\%_]/g, (match) => `\\${match}`)}`
+						]
+					};
+				}
 			} else {
 				let dummy: never = where.operator;
 			}
@@ -932,59 +1016,7 @@ export class DatabaseObjectStore<A extends ObjectProperties<A>, B extends string
 		parameters: Array<ObjectValue>;
 	} {
 		if (schema.WhereString.is(where)) {
-			if (schema.Operator.is(where.operator)) {
-				return this.serializeWherePrimitive({
-					key: where.key,
-					operator: where.operator,
-					operand: where.operand
-				}, null_order);
-			} else {
-				if (where.operator === "^=") {
-					if (where.operand == null) {
-						return {
-							sql: `(FALSE)`,
-							parameters: []
-						};
-					} else {
-						return {
-							sql: `${this.escapeIdentifier(where.key)} LIKE ? ESCAPE '\\\\'`,
-							parameters: [
-								`${where.operand.replace(/[\\%_]/g, (match) => `\\${match}`)}%`
-							]
-						};
-					}
-				} else if (where.operator === "*=") {
-					if (where.operand == null) {
-						return {
-							sql: `(FALSE)`,
-							parameters: []
-						};
-					} else {
-						return {
-							sql: `${this.escapeIdentifier(where.key)} LIKE ? ESCAPE '\\\\'`,
-							parameters: [
-								`%${where.operand.replace(/[\\%_]/g, (match) => `\\${match}`)}%`
-							]
-						};
-					}
-				} else if (where.operator === "$=") {
-					if (where.operand == null) {
-						return {
-							sql: `(FALSE)`,
-							parameters: []
-						};
-					} else {
-						return {
-							sql: `${this.escapeIdentifier(where.key)} LIKE ? ESCAPE '\\\\'`,
-							parameters: [
-								`%${where.operand.replace(/[\\%_]/g, (match) => `\\${match}`)}`
-							]
-						};
-					}
-				} else {
-					let dummy: never = where.operator;
-				}
-			}
+			return this.serializeWherePrimitive(where, null_order);
 		} else if (schema.WhereInteger.is(where)) {
 			return this.serializeWherePrimitive(where, null_order);
 		} else if (schema.WhereBoolean.is(where)) {
