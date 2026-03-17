@@ -15,6 +15,7 @@ async function getConnection() {
             password: "",
             bigIntAsNumber: true,
             decimalAsNumber: true,
+            checkNumberRange: true,
             typeCast: (field, next) => {
                 if ([1 /* mariadb.TypeNumbers.TINY */, 2 /* mariadb.TypeNumbers.SHORT */, 3 /* mariadb.TypeNumbers.LONG */].includes(field.columnType) && field.columnLength === 1) {
                     let value = field.int();

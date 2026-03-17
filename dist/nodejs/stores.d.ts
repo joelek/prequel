@@ -155,11 +155,7 @@ export declare class DatabaseObjectStore<A extends ObjectProperties<A>, B extend
     protected detectNullOrder(): Promise<NullOrder>;
     protected escapeIdentifier(identifier: string): string;
     protected executeQuery<A>(sql: string, parameters: Array<ObjectValue>): Promise<A>;
-    protected serializeWherePrimitive(where: {
-        key: string;
-        operator: schema.Operator;
-        operand: string | boolean | number | Date | null;
-    }, null_order: NullOrder): {
+    protected serializeWherePrimitive(where: schema.WhereBoolean | schema.WhereDate | schema.WhereInteger | schema.WhereString, null_order: NullOrder): {
         sql: string;
         parameters: Array<ObjectValue>;
     };

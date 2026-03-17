@@ -756,6 +756,54 @@ class DatabaseObjectStore extends ObjectStore {
                     };
                 }
             }
+            else if (where.operator === "^=") {
+                if (where.operand == null) {
+                    return {
+                        sql: `(FALSE)`,
+                        parameters: []
+                    };
+                }
+                else {
+                    return {
+                        sql: `${this.escapeIdentifier(where.key)} LIKE ? ESCAPE '\\\\'`,
+                        parameters: [
+                            `${where.operand.replace(/[\\%_]/g, (match) => `\\${match}`)}%`
+                        ]
+                    };
+                }
+            }
+            else if (where.operator === "*=") {
+                if (where.operand == null) {
+                    return {
+                        sql: `(FALSE)`,
+                        parameters: []
+                    };
+                }
+                else {
+                    return {
+                        sql: `${this.escapeIdentifier(where.key)} LIKE ? ESCAPE '\\\\'`,
+                        parameters: [
+                            `%${where.operand.replace(/[\\%_]/g, (match) => `\\${match}`)}%`
+                        ]
+                    };
+                }
+            }
+            else if (where.operator === "$=") {
+                if (where.operand == null) {
+                    return {
+                        sql: `(FALSE)`,
+                        parameters: []
+                    };
+                }
+                else {
+                    return {
+                        sql: `${this.escapeIdentifier(where.key)} LIKE ? ESCAPE '\\\\'`,
+                        parameters: [
+                            `%${where.operand.replace(/[\\%_]/g, (match) => `\\${match}`)}`
+                        ]
+                    };
+                }
+            }
             else {
                 let dummy = where.operator;
             }
@@ -857,6 +905,54 @@ class DatabaseObjectStore extends ObjectStore {
                     };
                 }
             }
+            else if (where.operator === "^=") {
+                if (where.operand == null) {
+                    return {
+                        sql: `(FALSE)`,
+                        parameters: []
+                    };
+                }
+                else {
+                    return {
+                        sql: `${this.escapeIdentifier(where.key)} LIKE ? ESCAPE '\\\\'`,
+                        parameters: [
+                            `${where.operand.replace(/[\\%_]/g, (match) => `\\${match}`)}%`
+                        ]
+                    };
+                }
+            }
+            else if (where.operator === "*=") {
+                if (where.operand == null) {
+                    return {
+                        sql: `(FALSE)`,
+                        parameters: []
+                    };
+                }
+                else {
+                    return {
+                        sql: `${this.escapeIdentifier(where.key)} LIKE ? ESCAPE '\\\\'`,
+                        parameters: [
+                            `%${where.operand.replace(/[\\%_]/g, (match) => `\\${match}`)}%`
+                        ]
+                    };
+                }
+            }
+            else if (where.operator === "$=") {
+                if (where.operand == null) {
+                    return {
+                        sql: `(FALSE)`,
+                        parameters: []
+                    };
+                }
+                else {
+                    return {
+                        sql: `${this.escapeIdentifier(where.key)} LIKE ? ESCAPE '\\\\'`,
+                        parameters: [
+                            `%${where.operand.replace(/[\\%_]/g, (match) => `\\${match}`)}`
+                        ]
+                    };
+                }
+            }
             else {
                 let dummy = where.operator;
             }
@@ -865,66 +961,7 @@ class DatabaseObjectStore extends ObjectStore {
     }
     serializeWhere(where, null_order) {
         if (schema.WhereString.is(where)) {
-            if (schema.Operator.is(where.operator)) {
-                return this.serializeWherePrimitive({
-                    key: where.key,
-                    operator: where.operator,
-                    operand: where.operand
-                }, null_order);
-            }
-            else {
-                if (where.operator === "^=") {
-                    if (where.operand == null) {
-                        return {
-                            sql: `(FALSE)`,
-                            parameters: []
-                        };
-                    }
-                    else {
-                        return {
-                            sql: `${this.escapeIdentifier(where.key)} LIKE ? ESCAPE '\\\\'`,
-                            parameters: [
-                                `${where.operand.replace(/[\\%_]/g, (match) => `\\${match}`)}%`
-                            ]
-                        };
-                    }
-                }
-                else if (where.operator === "*=") {
-                    if (where.operand == null) {
-                        return {
-                            sql: `(FALSE)`,
-                            parameters: []
-                        };
-                    }
-                    else {
-                        return {
-                            sql: `${this.escapeIdentifier(where.key)} LIKE ? ESCAPE '\\\\'`,
-                            parameters: [
-                                `%${where.operand.replace(/[\\%_]/g, (match) => `\\${match}`)}%`
-                            ]
-                        };
-                    }
-                }
-                else if (where.operator === "$=") {
-                    if (where.operand == null) {
-                        return {
-                            sql: `(FALSE)`,
-                            parameters: []
-                        };
-                    }
-                    else {
-                        return {
-                            sql: `${this.escapeIdentifier(where.key)} LIKE ? ESCAPE '\\\\'`,
-                            parameters: [
-                                `%${where.operand.replace(/[\\%_]/g, (match) => `\\${match}`)}`
-                            ]
-                        };
-                    }
-                }
-                else {
-                    let dummy = where.operator;
-                }
-            }
+            return this.serializeWherePrimitive(where, null_order);
         }
         else if (schema.WhereInteger.is(where)) {
             return this.serializeWherePrimitive(where, null_order);
