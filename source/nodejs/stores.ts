@@ -320,6 +320,19 @@ export type Options = {
 };
 
 export abstract class ObjectStore<A extends ObjectProperties<A>, B extends string> {
+	protected preprocessObject(object: Object<A, B>, trim_strings: boolean): Object<A, B> {
+		if (trim_strings) {
+			return Object.fromEntries(Object.entries<ObjectValue>(object).map(([key, property]) => {
+				if (typeof property === "string") {
+					property = property.split(/\r?\n/).map((line) => line.trim()).join("\n").replace(/(^\n+)|(\n+$)/g, "") || null;
+				}
+				return [key, property];
+			})) as Object<A, B>;
+		} else {
+			return object;
+		}
+	}
+
 	protected async getOptions(id: B, lookup_options?: LookupOptions<A, B>): Promise<Options> {
 		lookup_options = lookup_options ?? {};
 		let where: schema.Where = lookup_options.where ?? { all: [] };
@@ -373,6 +386,7 @@ export abstract class ObjectStore<A extends ObjectProperties<A>, B extends strin
 export type VolatileObjectStoreOptions<A extends ObjectProperties<A>, B extends string> = {
 	immutable_keys?: Array<keyof A>;
 	null_order?: NullOrder;
+	trim_strings?: boolean;
 };
 
 export class VolatileObjectStore<A extends ObjectProperties<A>, B extends string> extends ObjectStore<A, B> {
@@ -383,6 +397,7 @@ export class VolatileObjectStore<A extends ObjectProperties<A>, B extends string
 	protected objects: Map<ObjectValue, Object<A, B>>;
 	protected indices: Map<keyof A, ObjectIndex<A, B, keyof A>>;
 	protected collator: collators.Collator<ObjectValue>;
+	protected trim_strings: boolean;
 
 	protected insertIntoIndices(object: Object<A, B>): void {
 		for (let [key, index] of this.indices) {
@@ -535,17 +550,20 @@ export class VolatileObjectStore<A extends ObjectProperties<A>, B extends string
 		this.unique_keys = [ ...unique_keys ];
 		this.guard = guard;
 		this.immutable_keys = options?.immutable_keys ?? [];
-		this.collator = options?.null_order === "NULLS_LAST" ? collators.NULLS_LAST_OBJECT_VALUE_COLLATOR : collators.NULLS_FIRST_OBJECT_VALUE_COLLATOR
+		this.collator = options?.null_order === "NULLS_LAST" ? collators.NULLS_LAST_OBJECT_VALUE_COLLATOR : collators.NULLS_FIRST_OBJECT_VALUE_COLLATOR;
+		this.trim_strings = options?.trim_strings ?? true;
 		this.objects = new Map();
 		this.indices = new Map();
 	}
 
 	async createObject(properties: ObjectWithOptionalId<A, B>): Promise<Object<A, B>> {
 		let id = this.guard.is(properties) ? properties[this.id] : this.createId();
-		let object = this.guard.to({
+		let object = {
 			...properties,
 			[this.id]: id
-		});
+		};
+		object = this.preprocessObject(object, this.trim_strings);
+		object = this.guard.to(object);
 		for (let unique_key of this.unique_keys) {
 			let value = object[unique_key];
 			if (value != null) {
@@ -602,6 +620,7 @@ export class VolatileObjectStore<A extends ObjectProperties<A>, B extends string
 	}
 
 	async updateObject(object: Object<A, B>): Promise<Object<A, B>> {
+		object = this.preprocessObject(object, this.trim_strings);
 		object = this.guard.to(object);
 		let id = object[this.id];
 		let existing_object = this.objects.get(id);
@@ -662,6 +681,7 @@ export type DatabaseObjectStoreOptions<A extends ObjectProperties<A>, B extends 
 	debug_mode?: boolean;
 	immutable_keys?: Array<keyof A>;
 	null_order?: NullOrder;
+	trim_strings?: boolean;
 };
 
 export type NullOrder = "NULLS_FIRST" | "NULLS_LAST";
@@ -675,6 +695,7 @@ export class DatabaseObjectStore<A extends ObjectProperties<A>, B extends string
 	protected debug_mode: boolean;
 	protected immutable_keys: Array<keyof A>;
 	protected null_order: NullOrder | undefined;
+	protected trim_strings: boolean;
 
 	protected async createId(): Promise<string> {
 		let id = this.detail.generateId?.() ?? ids.generateHexId(32);
@@ -1091,14 +1112,17 @@ export class DatabaseObjectStore<A extends ObjectProperties<A>, B extends string
 		this.debug_mode = options?.debug_mode ?? false;
 		this.immutable_keys = options?.immutable_keys ?? [];
 		this.null_order = options?.null_order ?? undefined;
+		this.trim_strings = options?.trim_strings ?? true;
 	}
 
 	async createObject(properties: ObjectWithOptionalId<A, B>): Promise<Object<A, B>> {
 		let id = this.guard.is(properties) ? properties[this.id] : await this.createId();
-		let object = this.guard.to({
+		let object = {
 			...properties,
 			[this.id]: id
-		});
+		};
+		object = this.preprocessObject(object, this.trim_strings);
+		object = this.guard.to(object);
 		let columns = [
 			...Object.keys(object)
 		];
@@ -1160,6 +1184,7 @@ export class DatabaseObjectStore<A extends ObjectProperties<A>, B extends string
 	}
 
 	async updateObject(object: Object<A, B>): Promise<Object<A, B>> {
+		object = this.preprocessObject(object, this.trim_strings);
 		object = this.guard.to(object);
 		let id = object[this.id];
 		let existing_object = await this.lookupObject(id).catch(() => undefined);
