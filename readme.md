@@ -33,7 +33,7 @@ let objects = await OBJECTS.lookupObjects({
 Prequel includes support for interfacing with different object storage systems through the abstract `ObjectStore` class. It uses the following signature where the `A` type denotes the properties record and the `B` type the name of the id field, uniquely identifying each object.
 
 ```ts
-createObject(properties: A | Object<A, B>): Promise<Object<A, B>>;
+createObject(properties: ObjectWithOptionalId<A, B>): Promise<Object<A, B>>;
 lookupObject(id: string): Promise<Object<A, B>>;
 lookupObjects(lookup_options?: LookupOptions<A, B>): Promise<Array<Object<A, B>>>;
 updateObject(object: Object<A, B>): Promise<Object<A, B>>;
