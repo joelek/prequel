@@ -16,6 +16,10 @@ export type Object<A extends ObjectProperties<A>, B extends string> = A & {
 	[C in B]: string;
 };
 
+export type ObjectWithOptionalId<A extends ObjectProperties<A>, B extends string> = A & {
+	[C in B]?: string;
+};
+
 export class ExpectedObjectError extends Error {
 	readonly key: ObjectKey;
 	readonly value: ObjectValue;
@@ -359,7 +363,7 @@ export abstract class ObjectStore<A extends ObjectProperties<A>, B extends strin
 		};
 	}
 
-	abstract createObject(properties: A | Object<A, B>): Promise<Object<A, B>>;
+	abstract createObject(properties: ObjectWithOptionalId<A, B>): Promise<Object<A, B>>;
 	abstract lookupObject(id: string): Promise<Object<A, B>>;
 	abstract lookupObjects(lookup_options?: LookupOptions<A, B>): Promise<Array<Object<A, B>>>;
 	abstract updateObject(object: Object<A, B>): Promise<Object<A, B>>;
@@ -536,7 +540,7 @@ export class VolatileObjectStore<A extends ObjectProperties<A>, B extends string
 		this.indices = new Map();
 	}
 
-	async createObject(properties: A | Object<A, B>): Promise<Object<A, B>> {
+	async createObject(properties: ObjectWithOptionalId<A, B>): Promise<Object<A, B>> {
 		let id = this.guard.is(properties) ? properties[this.id] : this.createId();
 		let object = this.guard.to({
 			...properties,
@@ -1089,7 +1093,7 @@ export class DatabaseObjectStore<A extends ObjectProperties<A>, B extends string
 		this.null_order = options?.null_order ?? undefined;
 	}
 
-	async createObject(properties: A | Object<A, B>): Promise<Object<A, B>> {
+	async createObject(properties: ObjectWithOptionalId<A, B>): Promise<Object<A, B>> {
 		let id = this.guard.is(properties) ? properties[this.id] : await this.createId();
 		let object = this.guard.to({
 			...properties,
