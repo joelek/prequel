@@ -9,6 +9,9 @@ export type ObjectProperties<A> = {
 export type Object<A extends ObjectProperties<A>, B extends string> = A & {
     [C in B]: string;
 };
+export type ObjectWithOptionalId<A extends ObjectProperties<A>, B extends string> = A & {
+    [C in B]?: string;
+};
 export declare class ExpectedObjectError extends Error {
     readonly key: ObjectKey;
     readonly value: ObjectValue;
@@ -95,8 +98,9 @@ export type Options = {
     length?: number;
 };
 export declare abstract class ObjectStore<A extends ObjectProperties<A>, B extends string> {
+    protected preprocessObject(object: Object<A, B>, trim_strings: boolean): Object<A, B>;
     protected getOptions(id: B, lookup_options?: LookupOptions<A, B>): Promise<Options>;
-    abstract createObject(properties: A | Object<A, B>): Promise<Object<A, B>>;
+    abstract createObject(properties: ObjectWithOptionalId<A, B>): Promise<Object<A, B>>;
     abstract lookupObject(id: string): Promise<Object<A, B>>;
     abstract lookupObjects(lookup_options?: LookupOptions<A, B>): Promise<Array<Object<A, B>>>;
     abstract updateObject(object: Object<A, B>): Promise<Object<A, B>>;
@@ -105,6 +109,7 @@ export declare abstract class ObjectStore<A extends ObjectProperties<A>, B exten
 export type VolatileObjectStoreOptions<A extends ObjectProperties<A>, B extends string> = {
     immutable_keys?: Array<keyof A>;
     null_order?: NullOrder;
+    trim_strings?: boolean;
 };
 export declare class VolatileObjectStore<A extends ObjectProperties<A>, B extends string> extends ObjectStore<A, B> {
     protected id: B;
@@ -114,6 +119,7 @@ export declare class VolatileObjectStore<A extends ObjectProperties<A>, B extend
     protected objects: Map<ObjectValue, Object<A, B>>;
     protected indices: Map<keyof A, ObjectIndex<A, B, keyof A>>;
     protected collator: collators.Collator<ObjectValue>;
+    protected trim_strings: boolean;
     protected insertIntoIndices(object: Object<A, B>): void;
     protected updateObjectIndices(existing_object: Object<A, B>, object: Object<A, B>): void;
     protected removeFromIndices(object: Object<A, B>): void;
@@ -122,7 +128,7 @@ export declare class VolatileObjectStore<A extends ObjectProperties<A>, B extend
     protected getIndex<C extends keyof A>(key: C): ObjectIndex<A, B, C>;
     protected matchesWhere(object: Object<A, B>, where: schema.Where): boolean;
     constructor(id: B, unique_keys: Array<keyof A>, guard: autoguard.serialization.MessageGuard<Object<A, B>>, options?: VolatileObjectStoreOptions<A, B>);
-    createObject(properties: A | Object<A, B>): Promise<Object<A, B>>;
+    createObject(properties: ObjectWithOptionalId<A, B>): Promise<Object<A, B>>;
     lookupObject(id: string): Promise<Object<A, B>>;
     lookupObjects(lookup_options?: LookupOptions<A, B>): Promise<Array<Object<A, B>>>;
     updateObject(object: Object<A, B>): Promise<Object<A, B>>;
@@ -140,6 +146,7 @@ export type DatabaseObjectStoreOptions<A extends ObjectProperties<A>, B extends 
     debug_mode?: boolean;
     immutable_keys?: Array<keyof A>;
     null_order?: NullOrder;
+    trim_strings?: boolean;
 };
 export type NullOrder = "NULLS_FIRST" | "NULLS_LAST";
 export declare class DatabaseObjectStore<A extends ObjectProperties<A>, B extends string> extends ObjectStore<A, B> {
@@ -151,6 +158,7 @@ export declare class DatabaseObjectStore<A extends ObjectProperties<A>, B extend
     protected debug_mode: boolean;
     protected immutable_keys: Array<keyof A>;
     protected null_order: NullOrder | undefined;
+    protected trim_strings: boolean;
     protected createId(): Promise<string>;
     protected detectNullOrder(): Promise<NullOrder>;
     protected escapeIdentifier(identifier: string): string;
@@ -176,7 +184,7 @@ export declare class DatabaseObjectStore<A extends ObjectProperties<A>, B extend
         parameters: Array<ObjectValue>;
     };
     constructor(detail: DatabaseObjectStoreDetail, table: string, id: B, guard: autoguard.serialization.MessageGuard<Object<A, B>>, options?: DatabaseObjectStoreOptions<A, B>);
-    createObject(properties: A | Object<A, B>): Promise<Object<A, B>>;
+    createObject(properties: ObjectWithOptionalId<A, B>): Promise<Object<A, B>>;
     lookupObject(id: string): Promise<Object<A, B>>;
     lookupObjects(lookup_options?: LookupOptions<A, B>): Promise<Object<A, B>[]>;
     updateObject(object: Object<A, B>): Promise<Object<A, B>>;

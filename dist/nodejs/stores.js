@@ -241,6 +241,19 @@ class ObjectIndex {
 exports.ObjectIndex = ObjectIndex;
 ;
 class ObjectStore {
+    preprocessObject(object, trim_strings) {
+        if (trim_strings) {
+            return Object.fromEntries(Object.entries(object).map(([key, property]) => {
+                if (typeof property === "string") {
+                    property = property.split(/\r?\n/).map((line) => line.trim()).join("\n").replace(/(^\n+)|(\n+$)/g, "") || null;
+                }
+                return [key, property];
+            }));
+        }
+        else {
+            return object;
+        }
+    }
     async getOptions(id, lookup_options) {
         lookup_options = lookup_options ?? {};
         let where = lookup_options.where ?? { all: [] };
@@ -294,6 +307,7 @@ class VolatileObjectStore extends ObjectStore {
     objects;
     indices;
     collator;
+    trim_strings;
     insertIntoIndices(object) {
         for (let [key, index] of this.indices) {
             index.insert(object);
@@ -473,15 +487,18 @@ class VolatileObjectStore extends ObjectStore {
         this.guard = guard;
         this.immutable_keys = options?.immutable_keys ?? [];
         this.collator = options?.null_order === "NULLS_LAST" ? collators.NULLS_LAST_OBJECT_VALUE_COLLATOR : collators.NULLS_FIRST_OBJECT_VALUE_COLLATOR;
+        this.trim_strings = options?.trim_strings ?? true;
         this.objects = new Map();
         this.indices = new Map();
     }
     async createObject(properties) {
         let id = this.guard.is(properties) ? properties[this.id] : this.createId();
-        let object = this.guard.to({
+        let object = {
             ...properties,
             [this.id]: id
-        });
+        };
+        object = this.preprocessObject(object, this.trim_strings);
+        object = this.guard.to(object);
         for (let unique_key of this.unique_keys) {
             let value = object[unique_key];
             if (value != null) {
@@ -535,6 +552,7 @@ class VolatileObjectStore extends ObjectStore {
         return objects.map((object) => this.cloneObject(object));
     }
     async updateObject(object) {
+        object = this.preprocessObject(object, this.trim_strings);
         object = this.guard.to(object);
         let id = object[this.id];
         let existing_object = this.objects.get(id);
@@ -590,6 +608,7 @@ class DatabaseObjectStore extends ObjectStore {
     debug_mode;
     immutable_keys;
     null_order;
+    trim_strings;
     async createId() {
         let id = this.detail.generateId?.() ?? ids.generateHexId(32);
         while (true) {
@@ -1026,13 +1045,16 @@ class DatabaseObjectStore extends ObjectStore {
         this.debug_mode = options?.debug_mode ?? false;
         this.immutable_keys = options?.immutable_keys ?? [];
         this.null_order = options?.null_order ?? undefined;
+        this.trim_strings = options?.trim_strings ?? true;
     }
     async createObject(properties) {
         let id = this.guard.is(properties) ? properties[this.id] : await this.createId();
-        let object = this.guard.to({
+        let object = {
             ...properties,
             [this.id]: id
-        });
+        };
+        object = this.preprocessObject(object, this.trim_strings);
+        object = this.guard.to(object);
         let columns = [
             ...Object.keys(object)
         ];
@@ -1091,6 +1113,7 @@ class DatabaseObjectStore extends ObjectStore {
         return objects.map((object) => this.guard.to(object));
     }
     async updateObject(object) {
+        object = this.preprocessObject(object, this.trim_strings);
         object = this.guard.to(object);
         let id = object[this.id];
         let existing_object = await this.lookupObject(id).catch(() => undefined);
