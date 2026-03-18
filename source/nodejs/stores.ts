@@ -562,8 +562,8 @@ export class VolatileObjectStore<A extends ObjectProperties<A>, B extends string
 			...properties,
 			[this.id]: id
 		};
-		object = this.preprocessObject(object, this.trim_strings);
 		object = this.guard.to(object);
+		object = this.preprocessObject(object, this.trim_strings);
 		for (let unique_key of this.unique_keys) {
 			let value = object[unique_key];
 			if (value != null) {
@@ -620,8 +620,8 @@ export class VolatileObjectStore<A extends ObjectProperties<A>, B extends string
 	}
 
 	async updateObject(object: Object<A, B>): Promise<Object<A, B>> {
-		object = this.preprocessObject(object, this.trim_strings);
 		object = this.guard.to(object);
+		object = this.preprocessObject(object, this.trim_strings);
 		let id = object[this.id];
 		let existing_object = this.objects.get(id);
 		if (existing_object == null) {
@@ -1121,8 +1121,8 @@ export class DatabaseObjectStore<A extends ObjectProperties<A>, B extends string
 			...properties,
 			[this.id]: id
 		};
-		object = this.preprocessObject(object, this.trim_strings);
 		object = this.guard.to(object);
+		object = this.preprocessObject(object, this.trim_strings);
 		let columns = [
 			...Object.keys(object)
 		];
@@ -1184,8 +1184,8 @@ export class DatabaseObjectStore<A extends ObjectProperties<A>, B extends string
 	}
 
 	async updateObject(object: Object<A, B>): Promise<Object<A, B>> {
-		object = this.preprocessObject(object, this.trim_strings);
 		object = this.guard.to(object);
+		object = this.preprocessObject(object, this.trim_strings);
 		let id = object[this.id];
 		let existing_object = await this.lookupObject(id).catch(() => undefined);
 		if (existing_object == null) {
