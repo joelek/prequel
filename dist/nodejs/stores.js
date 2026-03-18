@@ -497,8 +497,8 @@ class VolatileObjectStore extends ObjectStore {
             ...properties,
             [this.id]: id
         };
-        object = this.preprocessObject(object, this.trim_strings);
         object = this.guard.to(object);
+        object = this.preprocessObject(object, this.trim_strings);
         for (let unique_key of this.unique_keys) {
             let value = object[unique_key];
             if (value != null) {
@@ -552,8 +552,8 @@ class VolatileObjectStore extends ObjectStore {
         return objects.map((object) => this.cloneObject(object));
     }
     async updateObject(object) {
-        object = this.preprocessObject(object, this.trim_strings);
         object = this.guard.to(object);
+        object = this.preprocessObject(object, this.trim_strings);
         let id = object[this.id];
         let existing_object = this.objects.get(id);
         if (existing_object == null) {
@@ -1053,8 +1053,8 @@ class DatabaseObjectStore extends ObjectStore {
             ...properties,
             [this.id]: id
         };
-        object = this.preprocessObject(object, this.trim_strings);
         object = this.guard.to(object);
+        object = this.preprocessObject(object, this.trim_strings);
         let columns = [
             ...Object.keys(object)
         ];
@@ -1113,8 +1113,8 @@ class DatabaseObjectStore extends ObjectStore {
         return objects.map((object) => this.guard.to(object));
     }
     async updateObject(object) {
-        object = this.preprocessObject(object, this.trim_strings);
         object = this.guard.to(object);
+        object = this.preprocessObject(object, this.trim_strings);
         let id = object[this.id];
         let existing_object = await this.lookupObject(id).catch(() => undefined);
         if (existing_object == null) {
